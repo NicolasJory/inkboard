@@ -1,9 +1,7 @@
 'use client';
 
-import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { toggleLike } from '@/app/(app)/dashboard/actions';
 
 interface PostData {
   id: string;
@@ -15,22 +13,9 @@ interface PostData {
   artistName: string;
   artistId: string;
   artistCity: string | null;
-  commentCount: number;
-  likeCount: number;
-  isLiked: boolean;
 }
 
 export function PostCard({ artwork }: { artwork: PostData }) {
-  const [liked, setLiked] = useState(artwork.isLiked);
-  const [likeCount, setLikeCount] = useState(artwork.likeCount);
-
-  async function handleLike() {
-    const newLiked = !liked;
-    setLiked(newLiked);
-    setLikeCount((c) => c + (newLiked ? 1 : -1));
-    await toggleLike(artwork.id);
-  }
-
   const timeAgo = getTimeAgo(new Date(artwork.createdAt));
 
   return (
@@ -58,46 +43,27 @@ export function PostCard({ artwork }: { artwork: PostData }) {
       </div>
 
       {/* Image */}
-      <div className="relative aspect-square">
-        <Image
-          src={artwork.imageUrl}
-          alt={artwork.title ?? 'Tattoo'}
-          fill
-          className="object-cover"
-          sizes="(max-width: 640px) 100vw, 512px"
-        />
-      </div>
+      <Link href={`/artist/${artwork.artistId}`} className="block">
+        <div className="relative aspect-square">
+          <Image
+            src={artwork.imageUrl}
+            alt={artwork.title ?? 'Tattoo'}
+            fill
+            className="object-cover"
+            sizes="(max-width: 640px) 100vw, 512px"
+          />
+        </div>
+      </Link>
 
-      {/* Actions */}
+      {/* Info */}
       <div className="px-4 py-3">
-        <div className="flex items-center gap-4">
-          <button onClick={handleLike} className="flex items-center gap-1.5 transition-colors">
-            <HeartIcon filled={liked} />
-            <span className={`text-sm font-medium ${liked ? 'text-red-500' : 'text-foreground'}`}>
-              {likeCount}
-            </span>
-          </button>
-          <Link
-            href={`/post/${artwork.id}`}
-            className="flex items-center gap-1.5 text-foreground transition-colors hover:text-accent"
-          >
-            <CommentIcon />
-            <span className="text-sm font-medium">{artwork.commentCount}</span>
-          </Link>
-        </div>
-
-        {/* Caption */}
-        <div className="mt-2">
-          {artwork.title && (
-            <p className="text-sm">
-              <span className="font-semibold text-foreground">{artwork.artistName}</span>{' '}
-              <span className="text-foreground/80">{artwork.title}</span>
-            </p>
-          )}
-          {artwork.description && (
-            <p className="mt-0.5 text-sm text-muted">{artwork.description}</p>
-          )}
-        </div>
+        {artwork.title && (
+          <p className="text-sm">
+            <span className="font-semibold text-foreground">{artwork.artistName}</span>{' '}
+            <span className="text-foreground/80">{artwork.title}</span>
+          </p>
+        )}
+        {artwork.description && <p className="mt-0.5 text-sm text-muted">{artwork.description}</p>}
 
         {/* Tags */}
         {artwork.styles.length > 0 && (
@@ -114,49 +80,23 @@ export function PostCard({ artwork }: { artwork: PostData }) {
           </div>
         )}
 
-        {/* View comments link */}
-        {artwork.commentCount > 0 && (
+        {/* CTA */}
+        <div className="mt-3 flex items-center gap-2">
           <Link
-            href={`/post/${artwork.id}`}
-            className="mt-1 block text-xs text-muted hover:text-foreground"
+            href={`/artist/${artwork.artistId}`}
+            className="rounded-lg border border-card-border px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:border-accent hover:text-accent"
           >
-            Voir les {artwork.commentCount} commentaire{artwork.commentCount > 1 ? 's' : ''}
+            Voir le profil
           </Link>
-        )}
+          <Link
+            href={`/artist/${artwork.artistId}/book`}
+            className="rounded-lg bg-accent px-3 py-1.5 text-xs font-semibold text-background transition-colors hover:bg-accent-hover"
+          >
+            Prendre RDV
+          </Link>
+        </div>
       </div>
     </article>
-  );
-}
-
-function HeartIcon({ filled }: { filled: boolean }) {
-  return (
-    <svg
-      className={`h-6 w-6 transition-colors ${filled ? 'fill-red-500 text-red-500' : 'text-foreground'}`}
-      viewBox="0 0 24 24"
-      fill={filled ? 'currentColor' : 'none'}
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-    </svg>
-  );
-}
-
-function CommentIcon() {
-  return (
-    <svg
-      className="h-6 w-6"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-    </svg>
   );
 }
 
