@@ -69,10 +69,10 @@ export default function HomePage() {
               Rejoindre InkBoard
             </Link>
             <Link
-              href="#features"
+              href="/explore"
               className="rounded-xl border border-card-border px-8 py-3.5 text-base font-medium text-foreground transition-colors hover:border-accent/40 hover:text-accent"
             >
-              Découvrir
+              Explorer les artistes
             </Link>
           </div>
         </div>

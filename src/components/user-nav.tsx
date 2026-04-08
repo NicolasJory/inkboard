@@ -23,13 +23,27 @@ export function UserNav() {
         >
           Dashboard
         </Link>
+        <Link
+          href="/explore"
+          className="text-sm text-muted transition-colors hover:text-foreground"
+        >
+          Explorer
+        </Link>
         {session?.user?.role === 'ARTIST' && (
-          <Link
-            href="/profile"
-            className="text-sm text-muted transition-colors hover:text-foreground"
-          >
-            Mon profil
-          </Link>
+          <>
+            <Link
+              href="/profile"
+              className="text-sm text-muted transition-colors hover:text-foreground"
+            >
+              Mon profil
+            </Link>
+            <Link
+              href="/bookings"
+              className="text-sm text-muted transition-colors hover:text-foreground"
+            >
+              RDV
+            </Link>
+          </>
         )}
         <div className="flex items-center gap-3">
           <span className="text-sm text-muted">{session?.user?.name ?? session?.user?.email}</span>
