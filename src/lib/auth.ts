@@ -2,8 +2,8 @@ import { AuthOptions } from 'next-auth';
 import { PrismaAdapter } from '@next-auth/prisma-adapter';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import GoogleProvider from 'next-auth/providers/google';
-import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/prisma';
+import { verifyOtp } from '@/lib/otp';
 
 export const authOptions: AuthOptions = {
   adapter: PrismaAdapter(prisma),
@@ -11,7 +11,7 @@ export const authOptions: AuthOptions = {
     strategy: 'jwt',
   },
   pages: {
-    signIn: '/signin',
+    signIn: '/login',
   },
   providers: [
     GoogleProvider({
@@ -19,28 +19,40 @@ export const authOptions: AuthOptions = {
       clientSecret: process.env.GOOGLE_CLIENT_SECRET ?? '',
     }),
     CredentialsProvider({
-      name: 'credentials',
+      id: 'otp',
+      name: 'Email OTP',
       credentials: {
         email: { label: 'Email', type: 'email' },
-        password: { label: 'Mot de passe', type: 'password' },
+        code: { label: 'Code', type: 'text' },
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
+        if (!credentials?.email || !credentials?.code) {
           return null;
         }
 
-        const user = await prisma.user.findUnique({
-          where: { email: credentials.email },
-        });
-
-        if (!user?.passwordHash) {
-          return null;
-        }
-
-        const isValid = await bcrypt.compare(credentials.password, user.passwordHash);
+        const isValid = await verifyOtp(credentials.email, credentials.code);
 
         if (!isValid) {
           return null;
+        }
+
+        // Find or create user
+        let user = await prisma.user.findUnique({
+          where: { email: credentials.email },
+        });
+
+        if (!user) {
+          user = await prisma.user.create({
+            data: {
+              email: credentials.email,
+              emailVerified: new Date(),
+            },
+          });
+        } else if (!user.emailVerified) {
+          await prisma.user.update({
+            where: { id: user.id },
+            data: { emailVerified: new Date() },
+          });
         }
 
         return {

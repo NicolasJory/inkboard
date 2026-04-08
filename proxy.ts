@@ -3,7 +3,7 @@ import type { NextRequest } from 'next/server';
 import { getToken } from 'next-auth/jwt';
 
 const protectedRoutes = ['/dashboard', '/profile', '/bookings'];
-const authRoutes = ['/signin', '/signup'];
+const authRoutes = ['/login'];
 
 export async function proxy(request: NextRequest) {
   const token = await getToken({ req: request });
@@ -13,7 +13,7 @@ export async function proxy(request: NextRequest) {
   const isAuthRoute = authRoutes.some((route) => pathname.startsWith(route));
 
   if (isProtected && !token) {
-    const url = new URL('/signin', request.url);
+    const url = new URL('/login', request.url);
     url.searchParams.set('callbackUrl', pathname);
     return NextResponse.redirect(url);
   }
