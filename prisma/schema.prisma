@@ -23,6 +23,8 @@ model User {
   accounts Account[]
   sessions Session[]
   bookings Booking[]
+  comments Comment[]
+  likes    Like[]
 }
 
 model Account {
@@ -104,7 +106,32 @@ model Artwork {
   styles      String[]
   createdAt   DateTime @default(now())
 
-  artist Artist @relation(fields: [artistId], references: [id], onDelete: Cascade)
+  artist   Artist    @relation(fields: [artistId], references: [id], onDelete: Cascade)
+  comments Comment[]
+  likes    Like[]
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  artworkId String
+  userId    String
+  text      String
+  createdAt DateTime @default(now())
+
+  artwork Artwork @relation(fields: [artworkId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Like {
+  id        String   @id @default(cuid())
+  artworkId String
+  userId    String
+  createdAt DateTime @default(now())
+
+  artwork Artwork @relation(fields: [artworkId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([artworkId, userId])
 }
 
 model Booking {

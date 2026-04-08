@@ -2,59 +2,165 @@
 
 import { signOut, useSession } from 'next-auth/react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { TattooMachine } from '@/components/icons';
 
 export function UserNav() {
   const { data: session } = useSession();
+  const pathname = usePathname();
+  const isArtist = session?.user?.role === 'ARTIST';
+
+  function navLink(href: string, label: string, icon: React.ReactNode) {
+    const active = pathname === href;
+    return (
+      <Link
+        href={href}
+        className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+          active ? 'text-accent' : 'text-muted hover:text-foreground'
+        }`}
+      >
+        {icon}
+        <span className="hidden md:inline">{label}</span>
+      </Link>
+    );
+  }
 
   return (
-    <nav className="flex items-center justify-between border-b border-card-border px-6 py-4 md:px-12">
-      <Link href="/dashboard" className="flex items-center gap-2">
-        <TattooMachine className="h-6 w-6 text-accent" />
-        <span className="font-[family-name:var(--font-display)] text-xl font-bold tracking-tight">
-          Ink<span className="text-accent">Board</span>
-        </span>
-      </Link>
+    <nav className="sticky top-0 z-40 border-b border-card-border bg-background/80 backdrop-blur-sm">
+      <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
+        {/* Logo */}
+        <Link href="/dashboard" className="flex items-center gap-2">
+          <TattooMachine className="h-6 w-6 text-accent" />
+          <span className="font-[family-name:var(--font-display)] text-xl font-bold tracking-tight">
+            Ink<span className="text-accent">Board</span>
+          </span>
+        </Link>
 
-      <div className="flex items-center gap-6">
-        <Link
-          href="/dashboard"
-          className="text-sm text-muted transition-colors hover:text-foreground"
-        >
-          Dashboard
-        </Link>
-        <Link
-          href="/explore"
-          className="text-sm text-muted transition-colors hover:text-foreground"
-        >
-          Explorer
-        </Link>
-        {session?.user?.role === 'ARTIST' && (
-          <>
-            <Link
-              href="/profile"
-              className="text-sm text-muted transition-colors hover:text-foreground"
-            >
-              Mon profil
-            </Link>
-            <Link
-              href="/bookings"
-              className="text-sm text-muted transition-colors hover:text-foreground"
-            >
-              RDV
-            </Link>
-          </>
-        )}
+        {/* Center nav */}
+        <div className="flex items-center gap-1">
+          {navLink('/dashboard', 'Feed', <HomeIcon />)}
+          {navLink('/explore', 'Explorer', <SearchIcon />)}
+          {isArtist && navLink('/new-post', 'Poster', <PlusIcon />)}
+          {isArtist && navLink('/bookings', 'RDV', <CalendarIcon />)}
+          {navLink('/profile', isArtist ? 'Profil' : 'Mon compte', <UserIcon />)}
+        </div>
+
+        {/* Right */}
         <div className="flex items-center gap-3">
-          <span className="text-sm text-muted">{session?.user?.name ?? session?.user?.email}</span>
           <button
             onClick={() => signOut({ callbackUrl: '/' })}
-            className="rounded-lg border border-card-border px-3 py-1.5 text-xs font-medium text-muted transition-colors hover:border-error hover:text-error"
+            className="rounded-lg px-3 py-1.5 text-xs font-medium text-muted transition-colors hover:text-error"
           >
-            Déconnexion
+            <LogoutIcon />
           </button>
         </div>
       </div>
     </nav>
+  );
+}
+
+function HomeIcon() {
+  return (
+    <svg
+      className="h-5 w-5"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+      <polyline points="9 22 9 12 15 12 15 22" />
+    </svg>
+  );
+}
+
+function SearchIcon() {
+  return (
+    <svg
+      className="h-5 w-5"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <circle cx="11" cy="11" r="8" />
+      <line x1="21" y1="21" x2="16.65" y2="16.65" />
+    </svg>
+  );
+}
+
+function PlusIcon() {
+  return (
+    <svg
+      className="h-5 w-5"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <rect x="3" y="3" width="18" height="18" rx="2" />
+      <line x1="12" y1="8" x2="12" y2="16" />
+      <line x1="8" y1="12" x2="16" y2="12" />
+    </svg>
+  );
+}
+
+function CalendarIcon() {
+  return (
+    <svg
+      className="h-5 w-5"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <rect x="3" y="4" width="18" height="18" rx="2" />
+      <line x1="16" y1="2" x2="16" y2="6" />
+      <line x1="8" y1="2" x2="8" y2="6" />
+      <line x1="3" y1="10" x2="21" y2="10" />
+    </svg>
+  );
+}
+
+function UserIcon() {
+  return (
+    <svg
+      className="h-5 w-5"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+      <circle cx="12" cy="7" r="4" />
+    </svg>
+  );
+}
+
+function LogoutIcon() {
+  return (
+    <svg
+      className="h-5 w-5"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+      <polyline points="16 17 21 12 16 7" />
+      <line x1="21" y1="12" x2="9" y2="12" />
+    </svg>
   );
 }
